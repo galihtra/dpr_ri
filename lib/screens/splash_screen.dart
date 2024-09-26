@@ -5,12 +5,29 @@ class SplashScreen extends StatefulWidget {
   _SplashScreenState createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> {
+class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
   @override
   void initState() {
     super.initState();
+
+    // Initialize animation controller and animation
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 1), // Animation duration
+    );
+
+    _animation = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeInOut,
+    );
+
+    _controller.forward(); // Start the animation
+
     Future.delayed(
-      Duration(seconds: 2),
+      const Duration(seconds: 3), // Splash duration before navigating
       () {
         Navigator.pushReplacementNamed(context, '/home');
       },
@@ -18,18 +35,51 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   @override
+  void dispose() {
+    _controller.dispose(); // Dispose of animation controller
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            FlutterLogo(
-              size: 100.0,
-            ),
-            SizedBox(height: 16.0),
-            Text('DPR RI'),
-          ],
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.deepPurple, Colors.purpleAccent],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              // Animated logo with scale transition
+              ScaleTransition(
+                scale: _animation,
+                child: Image.asset(
+                  "assets/images/logo_dpr.png",
+                  width: 150, // Logo size
+                  height: 150,
+                ),
+              ),
+              const SizedBox(height: 20),
+              // Optional: Add a loading indicator or text
+              const CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+              ),
+              const SizedBox(height: 20),
+              const Text(
+                'Loading...',
+                style: TextStyle(
+                  fontSize: 18,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
